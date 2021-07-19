@@ -1,0 +1,131 @@
+serve:
+  admin:
+    host: localhost
+    cors:
+      allowed_origins:
+        - http://localhost:8080
+      allowed_methods:
+        - POST
+      allowed_headers:
+        - ''
+      exposed_headers:
+        - ''
+      allow_credentials: false
+      options_passthrough: false
+      max_age: 0
+      debug: false
+      enabled: false
+    socket:
+      group: ''
+      mode: 0
+      owner: ''
+    access_log:
+      disable_for_health: false
+    port: 4445
+  tls:
+    cert:
+      path: /path/to/file.pem
+    allow_termination_from:
+      - 127.0.0.1/32
+    key:
+      path: /path/to/file.pem
+  cookies:
+    same_site_legacy_workaround: true
+    same_site_mode: Strict
+  public:
+    host: localhost
+    cors:
+      allowed_origins:
+        - http://localhost:8080
+      allowed_methods:
+        - POST
+      allowed_headers:
+        - ''
+      exposed_headers:
+        - ''
+      allow_credentials: false
+      options_passthrough: false
+      max_age: 0
+      debug: false
+      enabled: false
+    socket:
+      group: ''
+      mode: 0
+      owner: ''
+    access_log:
+      disable_for_health: false
+    port: 4444
+webfinger:
+  oidc_discovery:
+    token_url: http://localhost:4444/oauth2/token
+    auth_url: http://localhost:4444/oauth2/auth
+    client_registration_url: http://localhost:4444/clients
+    supported_claims:
+      - email
+      - username
+    supported_scope:
+      - email
+      - openid
+    userinfo_url: http://localhost:8080/userinfo
+    jwks_url: http://localhost:4444/.well-known/jwks.json
+  jwks:
+    broadcast_keys:
+    - hydra.jwt.access-token
+    - hydra.jwt.id-token
+oidc:
+  dynamic_client_registration:
+    default_scope:
+      - openid
+      - offline
+      - offline_access
+  subject_identifiers:
+    supported_types:
+      - public
+      - pairwise
+    pairwise:
+      salt: some-random-salt
+urls:
+  login: http://localhost:8080/login
+  consent: http://localhost:8080/consent
+  logout: http://localhost:8080/logout
+  error: http://localhost:8080/error
+  post_logout_redirect: http://localhost:8080/logout-successful
+  self:
+    public: http://localhost:4444/
+    issuer: http://localhost:4444/
+strategies:
+  access_token: opaque
+  scope: exact
+ttl:
+  access_token: 1h
+  refresh_token: 1h
+  id_token: 1h
+  auth_code: 1h
+  login_consent_request: 1h
+oauth2:
+  session:
+    encrypt_at_rest: false
+  include_legacy_error_fields: true
+  hashers:
+    bcrypt:
+      cost: 4
+  pkce:
+    enforced_for_public_clients: true
+    enforced: true
+  client_credentials:
+    default_grant_allowed_scope: false
+  expose_internal_errors: true
+secrets:
+  cookie:
+    - this-is-the-primary-secret
+    - this-is-an-old-secret
+    - this-is-another-old-secret
+  system:
+    - this-is-the-primary-secret
+    - this-is-an-old-secret
+    - this-is-another-old-secret
+version: v1.9.2
+log:
+  leak_sensitive_values: false
+  format: json
+  level: panic

@@ -1,0 +1,92 @@
+
+version: '3.7'
+
+services:
+  hydra-migrate:
+    depends_on:
+      - cockroachd-init
+    image: oryd/hydra:v1.9.2
+    environment:
+      - DSN=cockroach://root@cockroachd:26257/hydra?sslmode=disable&max_conns=20&max_idle_conns=4
+    command: -c /etc/hydra/hydra.yaml migrate sql -e --yes
+    networks:
+      - accounts
+    volumes:
+      - type: bind
+        source: ./etc/hydra
+        target: /etc/hydra
+
+  hydra:
+    depends_on:
+      - hydra-migrate
+    image: oryd/hydra:v1.9.2
+    ports:
+      - "4444:4444" # Public port
+      - "4445:4445" # Admin port
+    environment:
+      - DSN=cockroach://root@cockroachd:26257/hydra?sslmode=disable&max_conns=20&max_idle_conns=4
+    command: -c /etc/hydra/hydra.yaml serve all --dangerous-force-http --dangerous-allow-insecure-redirect-urls http://localhost:8080
+    networks:
+      - accounts
+    volumes:
+      - type: bind
+        source: ./etc/hydra
+        target: /etc/hydra
+
+  kratos-migrate:
+    depends_on:
+      - cockroachd-init
+    image: oryd/kratos:v0.5.5-alpha.1
+    environment:
+      - DSN=cockroach://root@cockroachd:26257/kratos?sslmode=disable&max_conns=20&max_idle_conns=4
+    command: -c /etc/kratos/kratos.yaml migrate sql -e --yes
+    networks:
+      - accounts
+    volumes:
+      - type: bind
+        source: ./etc/kratos
+        target: /etc/kratos
+
+  kratos:
+    depends_on:
+      - kratos-migrate
+    image: oryd/kratos:v0.5.5-alpha.1
+    ports:
+      - '4433:4433' # public
+      - '4434:4434' # admin
+    environment:
+      - DSN=cockroach://root@cockroachd:26257/kratos?sslmode=disable&max_conns=20&max_idle_conns=4
+    command: -c /etc/kratos/kratos.yaml serve
+    networks:
+      - accounts
+    volumes:
+    - type: bind
+      source: ./etc/kratos
+      target: /etc/kratos
+
+  cockroachd:
+    image: cockroachdb/cockroach:v20.2.6
+    ports:
+      - "26257:26257"
+    command: start-single-node --insecure --listen-addr 0.0.0.0
+    networks:
+      - accounts
+    volumes:
+    - type: volume
+      source: cockroach-data
+      target: /cockroach/cockroach-data
+
+  cockroachd-init:
+    depends_on:
+      - cockroachd
+
+    image: cockroachdb/cockroach:v20.2.6
+    command: sql --insecure --host cockroachd:26257 -e "create database if not exists kratos; create database if not exists hydra"
+    networks:
+      - accounts
+
+networks:
+  accounts: {}
+
+volumes:
+  cockroach-data: {}

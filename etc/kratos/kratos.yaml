@@ -1,0 +1,160 @@
+identity:
+  default_schema_url: file://etc/kratos/identity.schema.json
+#  schemas:
+#    - id: customer
+#      url: https://foo.bar.com/path/to/customer.traits.schema.json
+
+dsn: ''
+
+selfservice:
+  default_browser_return_url: http://localhost:8080/dashboard
+  flows:
+    logout:
+      after:
+        default_browser_return_url: http://localhost:8080/auth/login
+    registration:
+      ui_url: http://localhost:8080/auth/registration
+      lifespan: 1h
+      after:
+        password:
+          hooks:
+            - hook: session
+          default_browser_return_url: http://localhost:8080/dashboard
+        oidc:
+          hooks:
+            - hook: session
+          default_browser_return_url: http://localhost:8080/dashboard
+        default_browser_return_url: http://localhost:8080/dashboard
+    login:
+      ui_url: http://localhost:8080/auth/login
+      lifespan: 1h
+      after:
+        password:
+          hooks:
+            - hook: revoke_active_sessions
+          default_browser_return_url: http://localhost:8080/dashboard
+        oidc:
+          hooks:
+            - hook: revoke_active_sessions
+          default_browser_return_url: http://localhost:8080/dashboard
+        default_browser_return_url: http://localhost:8080/dashboard
+
+    verification:
+      enabled: true
+      ui_url: http://localhost:8080/verify
+      after:
+        default_browser_return_url: http://localhost:8080/dashboard
+      lifespan: 1h
+
+    recovery:
+      enabled: true
+      ui_url: http://localhost:8080/recovery
+      after:
+        default_browser_return_url: http://localhost:8080/dashboard
+      lifespan: 1h
+    error:
+      ui_url: http://localhost:8080/error
+    settings:
+      ui_url: http://localhost:8080/settings
+      lifespan: 1h
+      privileged_session_max_age: 1h
+      after:
+        password:
+          hooks:
+            - hook: verify
+          default_browser_return_url: http://localhost:8080/dashboard
+        profile:
+          hooks:
+            - hook: verify
+          default_browser_return_url: http://localhost:8080/dashboard
+        default_browser_return_url: http://localhost:8080/dashboard
+  methods:
+    link:
+      enabled: true
+    password:
+      enabled: true
+    oidc:
+      enabled: false
+#      config:
+#        providers:
+#          - id: google
+#            provider: google
+#            client_id: ''
+#            client_secret: ''
+#            mapper_url: file://path/to/oidc.jsonnet
+#            auth_url: https://accounts.google.com/o/oauth2/v2/auth
+#            token_url: https://www.googleapis.com/oauth2/v4/token
+#            scope:
+#              - offline_access
+#            tenant: common
+#            requested_claims:
+#              id_token:
+#                email:
+#                email_verified:
+#            issuer_url: https://accounts.google.com
+    profile:
+      enabled: true
+  whitelisted_return_urls:
+    - http://localhost:8080
+serve:
+  public:
+    base_url: http://locahost:4433
+    host: 0.0.0.0
+    port: 4433
+    cors:
+      enabled: true
+      allowed_origins:
+        - http://localhost:8080
+      allowed_methods:
+        - POST
+      allowed_headers:
+        - ''
+      exposed_headers:
+        - ''
+      allow_credentials: true
+      options_passthrough: false
+      max_age: 3600 # 1hr
+      debug: false
+  admin:
+    host: 0.0.0.0
+    port: 4434
+    base_url: http://localhost:4434/
+
+log:
+  leak_sensitive_values: false
+  format: json
+  level: trace
+
+password:
+  ignore_network_errors: false
+  max_breaches: 3
+
+secrets:
+  cookie:
+    - tjjw6ukASAxkkNS5Tfrpdi
+  default:
+    - dQAWvMEEgifjuvmQvOSDcr
+
+hashers:
+  argon2:
+    parallelism: 1
+    memory: 32768 # 32MB
+    iterations: 3
+    salt_length: 16
+    key_length: 32
+
+session:
+  cookie:
+    persistent: true
+    path: '/'
+    same_site: Strict
+#    domain: ''
+  lifespan: 10m
+
+version: v0.5.5-alpha.1
+
+courier:
+  smtp:
+    connection_uri: smtps://test:test@localhost:1025/?skip_ssl_verify=true
+    from_address: no-reply@dsjones.me
+#  template_override_path: /conf/courier-templates

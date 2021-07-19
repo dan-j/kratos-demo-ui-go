@@ -1,0 +1,21 @@
+<html>
+<head>
+    <title>Mercarto</title>
+</head>
+<body>
+    <h1>Login</h1>
+    <form action="/consent" method="post">
+        <input type="hidden" name="_csrf" value="{{ .csrf }}" />
+        <input type="hidden" name="_challenge" value="{{ .challenge }}" />
+        {{- range .requested_scopes }}
+        <label for="{{ . }}">{{ . }}</label>
+        <input type="checkbox" id="{{ . }}" value="{{ . }}" name="grant_scope">
+        {{- end }}
+
+        <label for="remember">Remember me</label>
+        <input type="checkbox" id="remember" name="remember" value="1">
+        <input type="submit" id="accept" name="submit" value="Allow" />
+        <input type="submit" id="reject" name="submit" value="Deny" />
+    </form>
+</body>
+</html>
